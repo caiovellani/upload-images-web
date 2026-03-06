@@ -1,5 +1,6 @@
 import { useDropzone } from "react-dropzone";
 import { CircularProgressBar } from "./ui/circular-progress-bar";
+import { motion } from "motion/react";
 
 export function UploadWidgetDropzone() {
   const isThereAnyPendingUpload = true;
@@ -18,7 +19,14 @@ export function UploadWidgetDropzone() {
   });
 
   return (
-    <div className="px-3 flex flex-col gap-3">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 0.2,
+      }}
+      className="px-3 flex flex-col gap-3"
+    >
       <div
         data-active={isDragActive}
         className="cursor-pointer text-zinc-400 bg-black/20 rounded-lg p-5 border border-zinc-700 border-dashed h-32 flex flex-col items-center justify-center gap-1 hover:border-zinc-600 transition-colors data-[active=true]:bg-indigo-500/10 data-[active=true]:border-indigo-500 data-[active=true]:text-indigo-400"
@@ -46,6 +54,6 @@ export function UploadWidgetDropzone() {
       <span className="text-xs text-zinc-400">
         Only PNG and JPG files are supported.
       </span>
-    </div>
+    </motion.div>
   );
 }
