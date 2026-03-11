@@ -4,7 +4,14 @@ interface Props {
   file: File;
 }
 
-export async function uploadFileToStorage({ file }: Props) {
+interface uploadFileToStorageOpts {
+  signal?: AbortSignal;
+}
+
+export async function uploadFileToStorage(
+  { file }: Props,
+  opts?: uploadFileToStorageOpts,
+) {
   const data = new FormData();
 
   data.append("file", file);
@@ -16,6 +23,7 @@ export async function uploadFileToStorage({ file }: Props) {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      signal: opts?.signal,
     },
   );
 
