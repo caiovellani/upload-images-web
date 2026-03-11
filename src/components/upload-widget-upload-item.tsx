@@ -15,7 +15,7 @@ export function UploadWidgetUploadItem({ upload, uploadId }: Props) {
   const cancelUpload = useUploads((store) => store.cancelUpload);
 
   const progress = Math.min(
-    (upload.uploadSizeInBytes * 100) / upload.originalSizeInBytes,
+    Math.round((upload.uploadSizeInBytes * 100) / upload.originalSizeInBytes),
     100,
   );
 
