@@ -5,14 +5,19 @@ import { Button } from "./ui/button";
 import { motion } from "motion/react";
 import { useUploads, type Upload } from "../store/uploads";
 import { formatBytes } from "../utils/format-bytes";
+import { downloadUrl } from "../utils/download-url";
 
-interface Props {
+interface UploadWidgetUploadItemProps {
   upload: Upload;
   uploadId: string;
 }
 
-export function UploadWidgetUploadItem({ upload, uploadId }: Props) {
+export function UploadWidgetUploadItem({
+  upload,
+  uploadId,
+}: UploadWidgetUploadItemProps) {
   const cancelUpload = useUploads((store) => store.cancelUpload);
+  const retryUpload = useUploads((store) => store.retryUpload);
 
   const progress = Math.min(
     upload.compressedSizeInBytes
@@ -25,20 +30,20 @@ export function UploadWidgetUploadItem({ upload, uploadId }: Props) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{
-        duration: 0.4,
-      }}
       className="p-3 rounded-lg flex flex-col gap-3 shadow-shape-content bg-white/2 relative overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: 1,
+      }}
+      transition={{ duration: 0.4 }}
     >
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium flex items-center gap-1">
           <ImageUp className="size-3 text-zinc-300" strokeWidth={1.5} />
-          <span>{upload.name}</span>
+          <span className="max-w-[180px] truncate">{upload.name}</span>
         </span>
 
-        <span className="text-[10px] text-zinc-400 flex gap-1.5 items-center">
+        <span className="text-xxs text-zinc-400 flex gap-1.5 items-center">
           <span className="line-through">
             {formatBytes(upload.originalSizeInBytes)}
           </span>
@@ -58,8 +63,9 @@ export function UploadWidgetUploadItem({ upload, uploadId }: Props) {
             )}
           </span>
           <div className="size-1 rounded-full bg-zinc-700" />
+
           {upload.status === "success" && <span>100%</span>}
-          {upload.status === "progress" && <span>45%</span>}
+          {upload.status === "progress" && <span>{progress}%</span>}
           {upload.status === "error" && (
             <span className="text-red-400">Error</span>
           )}
@@ -70,28 +76,30 @@ export function UploadWidgetUploadItem({ upload, uploadId }: Props) {
       </div>
 
       <Progress.Root
-        data-status={upload.status}
         value={progress}
-        className="group bg-zinc-800 rounded-full h-1 overflow-hidden"
+        data-status={upload.status}
+        className="bg-zinc-800 rounded-full h-1 overflow-hidden group"
       >
         <Progress.Indicator
           className="bg-indigo-500 h-1 group-data-[status=success]:bg-green-400 group-data-[status=error]:bg-red-400 group-data-[status=canceled]:bg-yellow-400 transition-all"
           style={{
-            width: upload.status === "progress" ? `${{ progress }}%` : "100%",
+            width: upload.status === "progress" ? `${progress}%` : "100%",
           }}
         />
       </Progress.Root>
 
-      <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+      <div className="absolute top-2 right-2 flex items-center gap-1">
         <Button
-          asChild
-          aria-disabled={upload.status !== "success"}
           size="icon-sm"
+          aria-disabled={!upload.remoteUrl}
+          onClick={() => {
+            if (upload.remoteUrl) {
+              downloadUrl(upload.remoteUrl);
+            }
+          }}
         >
-          <a href={upload.remoteUrl} download>
-            <Download className="size-4" strokeWidth={1.5} />
-            <span className="sr-only">Download compressed image</span>
-          </a>
+          <Download className="size-4" strokeWidth={1.5} />
+          <span className="sr-only">Download compressed image</span>
         </Button>
 
         <Button
@@ -108,6 +116,7 @@ export function UploadWidgetUploadItem({ upload, uploadId }: Props) {
         <Button
           disabled={!["canceled", "error"].includes(upload.status)}
           size="icon-sm"
+          onClick={() => retryUpload(uploadId)}
         >
           <RefreshCcw className="size-4" strokeWidth={1.5} />
           <span className="sr-only">Retry upload</span>
